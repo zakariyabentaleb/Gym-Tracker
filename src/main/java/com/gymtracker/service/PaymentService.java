@@ -55,28 +55,34 @@ public class PaymentService {
                 .reference(req.getReference())
                 .build();
 
-        Payment saved = paymentRepository.save(p);
-        return PaymentMapper.toDto(saved);
+        try {
+            Payment saved = paymentRepository.save(p);
+            return PaymentMapper.toDto(saved);
+        } catch (Exception ex) {
+            // Convert to IllegalArgumentException so GlobalExceptionHandler returns 400 with the cause
+            String root = ex.getMessage();
+            if (ex.getCause() != null) root = ex.getCause().getMessage() + " | " + root;
+            throw new IllegalArgumentException("Failed to save payment: " + root, ex);
+        }
     }
 
     public com.gymtracker.dto.PaymentResponse findById(Long id) {
-        Optional<Payment> opt = paymentRepository.findById(id);
+        Optional<com.gymtracker.entity.Payment> opt = paymentRepository.findById(id);
         if (opt.isEmpty()) return null;
         return PaymentMapper.toDto(opt.get());
     }
 
     public List<com.gymtracker.dto.PaymentResponse> findByMemberId(Long memberId) {
-        List<Payment> list = paymentRepository.findByMemberId(memberId);
+        List<com.gymtracker.entity.Payment> list = paymentRepository.findByMemberId(memberId);
         List<com.gymtracker.dto.PaymentResponse> out = new ArrayList<>();
-        for (Payment p : list) out.add(PaymentMapper.toDto(p));
+        for (com.gymtracker.entity.Payment p : list) out.add(PaymentMapper.toDto(p));
         return out;
     }
 
     public List<com.gymtracker.dto.PaymentResponse> findBySubscriptionId(Long subscriptionId) {
-        List<Payment> list = paymentRepository.findBySubscriptionId(subscriptionId);
+        List<com.gymtracker.entity.Payment> list = paymentRepository.findBySubscriptionId(subscriptionId);
         List<com.gymtracker.dto.PaymentResponse> out = new ArrayList<>();
-        for (Payment p : list) out.add(PaymentMapper.toDto(p));
+        for (com.gymtracker.entity.Payment p : list) out.add(PaymentMapper.toDto(p));
         return out;
     }
 }
-
