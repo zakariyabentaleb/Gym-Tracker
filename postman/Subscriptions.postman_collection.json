@@ -1,0 +1,120 @@
+{
+  "info": {
+    "name": "Gym-Tracker - Subscriptions",
+    "_postman_id": "b9f4c8d0-0000-4000-8000-000000000000",
+    "description": "Collection to test Subscription endpoints (create, list, get, update, renew). Set environment variables: baseUrl, authToken",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Subscription (ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "{{authToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"memberId\": 7,\n  \"planId\": 2,\n  \"startDate\": \"2026-02-13\",\n  \"autoRenew\": true\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/subscriptions", "host": ["{{baseUrl}}"], "path": ["api","subscriptions"] }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "var json = pm.response.json();",
+              "pm.test('Has id', function () { pm.expect(json.id).to.exist; });",
+              "pm.test('MemberId matches', function () { pm.expect(json.memberId).to.eql(7); });",
+              "pm.test('Status is ACTIVE', function () { pm.expect(json.status).to.eql('ACTIVE'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Subscription for me (MEMBER)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "{{authToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"planId\": 2,\n  \"startDate\": \"2026-02-13\",\n  \"autoRenew\": false\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/subscriptions/me", "host": ["{{baseUrl}}"], "path": ["api","subscriptions","me"] }
+      },
+      "response": [],
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status is 201', function () { pm.response.to.have.status(201); });" ], "type": "text/javascript" } } ]
+    },
+    {
+      "name": "Get Subscription by Id (ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "{{authToken}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/subscriptions/:id", "host": ["{{baseUrl}}"], "path": ["api","subscriptions",":id"] }
+      },
+      "response": [],
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status is 200', function () { pm.response.to.have.status(200); });" ], "type": "text/javascript" } } ]
+    },
+    {
+      "name": "Get Subscriptions by Member (ADMIN)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "{{authToken}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/subscriptions/member/:memberId", "host": ["{{baseUrl}}"], "path": ["api","subscriptions","member",":memberId"] }
+      },
+      "response": [],
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status is 200', function () { pm.response.to.have.status(200); });" ], "type": "text/javascript" } } ]
+    },
+    {
+      "name": "Get my Subscriptions (MEMBER)",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Authorization", "value": "{{authToken}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/subscriptions/me", "host": ["{{baseUrl}}"], "path": ["api","subscriptions","me"] }
+      },
+      "response": [],
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status is 200', function () { pm.response.to.have.status(200); });" ], "type": "text/javascript" } } ]
+    },
+    {
+      "name": "Update Subscription (ADMIN)",
+      "request": {
+        "method": "PATCH",
+        "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "{{authToken}}" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"SUSPENDED\",\n  \"autoRenew\": false\n}" },
+        "url": { "raw": "{{baseUrl}}/api/subscriptions/:id", "host": ["{{baseUrl}}"], "path": ["api","subscriptions",":id"] }
+      },
+      "response": [],
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status is 200', function () { pm.response.to.have.status(200); });", "var json = pm.response.json();", "pm.test('status updated', function () { pm.expect(json.status).to.eql('SUSPENDED'); });" ], "type": "text/javascript" } } ]
+    },
+    {
+      "name": "Renew Subscription (ADMIN)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Authorization", "value": "{{authToken}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/subscriptions/:id/renew", "host": ["{{baseUrl}}"], "path": ["api","subscriptions",":id","renew"] }
+      },
+      "response": [],
+      "event": [ { "listen": "test", "script": { "exec": [ "pm.test('Status is 200', function () { pm.response.to.have.status(200); });", "var json = pm.response.json();", "pm.test('status is active', function () { pm.expect(json.status).to.eql('ACTIVE'); });" ], "type": "text/javascript" } } ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": { "exec": [], "type": "text/javascript" }
+    },
+    {
+      "listen": "test",
+      "script": { "exec": [], "type": "text/javascript" }
+    }
+  ]
+}
+
