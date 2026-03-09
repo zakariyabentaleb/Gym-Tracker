@@ -1,6 +1,9 @@
 package com.gymtracker.controller;
 
 import com.gymtracker.dto.MeResponse;
+import com.gymtracker.entity.AppUser;
+import com.gymtracker.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,7 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class ApiController {
+
+    private final UserRepository userRepository;
 
     @GetMapping("/hello")
     public String hello(Authentication authentication) {
@@ -24,7 +30,8 @@ public class ApiController {
         List<String> roles = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
-        return new MeResponse(authentication.getName(), roles);
+        AppUser user = userRepository.findByUsername(authentication.getName()).orElseThrow();
+        return new MeResponse(user.getId(), authentication.getName(), roles);
     }
 
     @GetMapping("/admin/ping")
