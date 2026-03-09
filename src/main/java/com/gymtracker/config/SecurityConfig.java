@@ -34,6 +34,10 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses", "/api/courses/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/course-schedules", "/api/course-schedules/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/coaches/active", "/api/coaches/{id}").permitAll()
                         .anyRequest().authenticated()
                 )
                 // H2 console needs these
