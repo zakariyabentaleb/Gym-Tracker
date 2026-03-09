@@ -17,6 +17,11 @@ public class CourseScheduleController {
 
     private final CourseScheduleService scheduleService;
 
+    @GetMapping
+    public List<CourseScheduleResponse> listAll() {
+        return scheduleService.findAll();
+    }
+
     @GetMapping("/course/{courseId}")
     public List<CourseScheduleResponse> listByCourse(@PathVariable Long courseId) {
         return scheduleService.findByCourseId(courseId);
