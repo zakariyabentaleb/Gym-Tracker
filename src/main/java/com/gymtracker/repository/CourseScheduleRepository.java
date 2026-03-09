@@ -12,5 +12,7 @@ import java.util.List;
 public interface CourseScheduleRepository extends CrudRepository<CourseSchedule, Long> {
     @Query("SELECT * FROM course_schedules WHERE course_id = :courseId")
     List<CourseSchedule> findByCourseId(@Param("courseId") Long courseId);
-}
 
+    @Query("SELECT * FROM course_schedules WHERE coach_id = :coachId")
+    List<CourseSchedule> findByCoachId(@Param("coachId") Long coachId);
+}
