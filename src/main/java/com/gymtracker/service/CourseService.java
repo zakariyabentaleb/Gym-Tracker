@@ -46,6 +46,7 @@ public class CourseService {
         if (req.getDurationMinutes() != null) c.setDurationMinutes(req.getDurationMinutes());
         if (req.getCapacity() != null) c.setCapacity(req.getCapacity());
         if (req.getActive() != null) c.setActive(req.getActive());
+        if (req.getPhotoUrl() != null) c.setPhotoUrl(req.getPhotoUrl());
         Course saved = courseRepository.save(c);
         return CourseMapper.toDto(saved);
     }
