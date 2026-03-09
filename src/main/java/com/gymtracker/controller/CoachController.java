@@ -26,6 +26,12 @@ public class CoachController {
         return coachService.create(req);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_RECEPTIONIST')")
+    public List<CoachResponse> listAll() {
+        return coachService.listAll();
+    }
+
     @GetMapping("/active")
     public List<CoachResponse> listActive() {
         return coachService.listActive();
