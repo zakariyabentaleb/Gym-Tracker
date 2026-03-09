@@ -56,7 +56,7 @@ public class AuthController {
             }
         }
 
-        userRepository.save(AppUser.builder()
+        AppUser saved = userRepository.save(AppUser.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .roles(role.name())
@@ -67,7 +67,7 @@ public class AuthController {
         );
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         String jwt = jwtUtil.generateToken(principal);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(jwt));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(jwt, saved.getId()));
     }
 
     @PostMapping("/login")
@@ -78,11 +78,12 @@ public class AuthController {
             );
 
             String jwt = jwtUtil.generateToken((UserDetails) authentication.getPrincipal());
-            return ResponseEntity.ok(new AuthResponse(jwt));
+            AppUser user = userRepository.findByUsername(request.getUsername()).orElseThrow();
+            return ResponseEntity.ok(new AuthResponse(jwt, user.getId()));
         } catch (BadCredentialsException ex) {
             // GlobalExceptionHandler will format the JSON
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(""));
+                    .body(new AuthResponse("", null));
         }
     }
 }
