@@ -16,5 +16,6 @@ public class CourseResponse {
     private Integer durationMinutes;
     private Integer capacity;
     private Boolean active;
+    private String photoUrl;
 }
 
