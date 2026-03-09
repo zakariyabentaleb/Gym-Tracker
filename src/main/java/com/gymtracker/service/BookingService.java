@@ -11,7 +11,9 @@ import com.gymtracker.repository.CourseRepository;
 import com.gymtracker.repository.CourseScheduleRepository;
 import com.gymtracker.repository.MemberRepository;
 import com.gymtracker.repository.WaitlistRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ public class BookingService {
         this.waitlistRepository = waitlistRepository;
     }
 
+    @Transactional
     public com.gymtracker.dto.BookingResponse create(BookingCreateRequest req) {
         if (req.getMemberId() == null) throw new IllegalArgumentException("memberId is required");
         Optional<Member> mOpt = memberRepository.findById(req.getMemberId());
@@ -55,7 +58,7 @@ public class BookingService {
 
         // check if member already booked
         Optional<Booking> existing = bookingRepository.findByScheduleIdAndMemberId(s.getId(), req.getMemberId());
-        if (existing.isPresent() && !"CANCELLED".equalsIgnoreCase(existing.get().getStatus())) {
+        if (existing.isPresent() && !BookingStatus.CANCELLED.equalsIgnoreCase(existing.get().getStatus())) {
             throw new IllegalStateException("Member already has a booking for this schedule");
         }
 
@@ -64,18 +67,28 @@ public class BookingService {
 
         // count confirmed bookings for this schedule
         List<Booking> bookings = bookingRepository.findByScheduleId(s.getId());
-        long confirmed = bookings.stream().filter(b -> "CONFIRMED".equalsIgnoreCase(b.getStatus())).count();
+        long confirmed = bookings.stream().filter(b -> BookingStatus.CONFIRMED.equalsIgnoreCase(b.getStatus())).count();
 
         if (confirmed < capacity) {
             Booking b = Booking.builder()
                     .scheduleId(s.getId())
                     .memberId(req.getMemberId())
-                    .status("CONFIRMED")
+                    .status(BookingStatus.CONFIRMED)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
-            Booking saved = bookingRepository.save(b);
-            return BookingMapper.toDto(saved);
+            try {
+                Booking saved = bookingRepository.save(b);
+                return BookingMapper.toDto(saved);
+            } catch (DataIntegrityViolationException ex) {
+                // probably a concurrent duplicate insert -> fetch existing booking and return it
+                Optional<Booking> after = bookingRepository.findByScheduleIdAndMemberId(s.getId(), req.getMemberId());
+                if (after.isPresent()) {
+                    return BookingMapper.toDto(after.get());
+                }
+                String root = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+                throw new IllegalArgumentException("Failed to save booking: " + root, ex);
+            }
         } else {
             // add to waitlist
             Integer maxPos = waitlistRepository.findMaxPositionForSchedule(s.getId());
@@ -92,7 +105,7 @@ public class BookingService {
             resp.setId(null);
             resp.setScheduleId(s.getId());
             resp.setMemberId(req.getMemberId());
-            resp.setStatus("WAITING");
+            resp.setStatus(BookingStatus.WAITING);
             resp.setCreatedAt(saved.getCreatedAt());
             resp.setUpdatedAt(null);
             return resp;
@@ -119,12 +132,13 @@ public class BookingService {
         return out;
     }
 
+    @Transactional
     public com.gymtracker.dto.BookingResponse cancel(Long bookingId) {
         Optional<Booking> opt = bookingRepository.findById(bookingId);
         if (opt.isEmpty()) throw new IllegalArgumentException("Booking not found: " + bookingId);
         Booking b = opt.get();
-        if ("CANCELLED".equalsIgnoreCase(b.getStatus())) throw new IllegalStateException("Booking already cancelled");
-        b.setStatus("CANCELLED");
+        if (BookingStatus.CANCELLED.equalsIgnoreCase(b.getStatus())) throw new IllegalStateException("Booking already cancelled");
+        b.setStatus(BookingStatus.CANCELLED);
         b.setUpdatedAt(LocalDateTime.now());
         bookingRepository.save(b);
 
@@ -142,11 +156,15 @@ public class BookingService {
         Booking nb = Booking.builder()
                 .scheduleId(scheduleId)
                 .memberId(first.getMemberId())
-                .status("CONFIRMED")
+                .status(BookingStatus.CONFIRMED)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
-        bookingRepository.save(nb);
+        try {
+            bookingRepository.save(nb);
+        } catch (DataIntegrityViolationException ex) {
+            // someone else simultaneously created the booking; ignore and continue
+        }
         // remove waitlist entry
         waitlistRepository.deleteById(first.getId());
         // re-order positions: simple approach - fetch remaining and update positions
