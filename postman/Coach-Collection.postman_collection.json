@@ -1,0 +1,181 @@
+{
+  "info": {
+    "name": "Gym-Tracker - Coach API",
+    "_postman_id": "coach-collection-001",
+    "description": "Collection to test Coach endpoints for Gym-Tracker backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "token", "value": "" },
+    { "key": "coachId", "value": "" },
+    { "key": "scheduleId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "auth", "login" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save JWT token to collection variable for subsequent requests",
+              "if (pm.response.code === 200) {",
+              "  const json = pm.response.json();",
+              "  if (json && json.jwt) pm.collectionVariables.set('token', json.jwt);",
+              "  else if (json && json.token) pm.collectionVariables.set('token', json.token);",
+              "}",
+              "pm.test('Login response code is 200', function () { pm.response.to.have.status(200); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Coach - Create (admin)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": null,\n  \"displayName\": \"Marc Dupont\",\n  \"phone\": \"+33123456789\",\n  \"bio\": \"Coach certifié Yoga & Pilates\",\n  \"certifications\": \"Yoga Level 2\",\n  \"photoUrl\": \"\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches" ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Create coach returns 201', function () { pm.response.to.have.status(201); });",
+              "const json = pm.response.json();",
+              "if (json && json.id) pm.collectionVariables.set('coachId', json.id);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Coach - List active",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches/active",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches", "active" ]
+        }
+      }
+    },
+
+    {
+      "name": "Coach - Get by id",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches/{{coachId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches", "{{coachId}}" ]
+        }
+      }
+    },
+
+    {
+      "name": "Coach - Update",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"displayName\": \"Marc D.\",\n  \"phone\": \"+33123456790\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches/{{coachId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches", "{{coachId}}" ]
+        }
+      }
+    },
+
+    {
+      "name": "Coach - Assign to schedule",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches/{{coachId}}/assign-schedule/{{scheduleId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches", "{{coachId}}", "assign-schedule", "{{scheduleId}}" ]
+        }
+      }
+    },
+
+    {
+      "name": "Coach - Get schedules (admin)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches/{{coachId}}/schedules",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches", "{{coachId}}", "schedules" ]
+        }
+      }
+    },
+
+    {
+      "name": "Coach - My schedules (coach user)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/coaches/me/schedules",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "api", "coaches", "me", "schedules" ]
+        }
+      }
+    }
+  ]
+}
+
