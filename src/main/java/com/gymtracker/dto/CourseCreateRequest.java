@@ -9,5 +9,6 @@ public class CourseCreateRequest {
     private Integer durationMinutes;
     private Integer capacity;
     private Boolean active = true;
+    private String photoUrl;
 }
 
