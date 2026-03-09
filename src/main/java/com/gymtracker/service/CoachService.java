@@ -42,6 +42,12 @@ public class CoachService {
         return opt.map(CoachMapper::toDto).orElse(null);
     }
 
+    public List<CoachResponse> listAll() {
+        List<CoachResponse> out = new ArrayList<>();
+        coachRepository.findAll().forEach(c -> out.add(CoachMapper.toDto(c)));
+        return out;
+    }
+
     public List<CoachResponse> listActive() {
         List<Coach> list = coachRepository.findActive();
         List<CoachResponse> out = new ArrayList<>();
@@ -60,6 +66,7 @@ public class CoachService {
         if (req.getCertifications() != null) c.setCertifications(req.getCertifications());
         if (req.getPhotoUrl() != null) c.setPhotoUrl(req.getPhotoUrl());
         if (req.getUserId() != null) c.setUserId(req.getUserId());
+        if (req.getActive() != null) c.setActive(req.getActive());
         c.setUpdatedAt(LocalDateTime.now());
         Coach saved = coachRepository.save(c);
         return CoachMapper.toDto(saved);
