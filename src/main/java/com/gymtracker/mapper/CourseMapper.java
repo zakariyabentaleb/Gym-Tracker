@@ -13,6 +13,7 @@ public class CourseMapper {
         dto.setDurationMinutes(c.getDurationMinutes());
         dto.setCapacity(c.getCapacity());
         dto.setActive(c.getActive());
+        dto.setPhotoUrl(c.getPhotoUrl());
         return dto;
     }
 
@@ -24,6 +25,7 @@ public class CourseMapper {
                 .durationMinutes(req.getDurationMinutes())
                 .capacity(req.getCapacity())
                 .active(req.getActive())
+                .photoUrl(req.getPhotoUrl())
                 .build();
     }
 }
