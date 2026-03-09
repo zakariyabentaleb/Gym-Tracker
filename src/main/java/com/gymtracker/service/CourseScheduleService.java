@@ -30,6 +30,12 @@ public class CourseScheduleService {
         return CourseScheduleMapper.toDto(saved);
     }
 
+    public List<com.gymtracker.dto.CourseScheduleResponse> findAll() {
+        List<com.gymtracker.dto.CourseScheduleResponse> out = new ArrayList<>();
+        scheduleRepository.findAll().forEach(s -> out.add(CourseScheduleMapper.toDto(s)));
+        return out;
+    }
+
     public com.gymtracker.dto.CourseScheduleResponse findById(Long id) {
         Optional<CourseSchedule> opt = scheduleRepository.findById(id);
         if (opt.isEmpty()) return null;
