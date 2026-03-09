@@ -33,5 +33,8 @@ public class Course {
 
     @Column("active")
     private Boolean active;
+
+    @Column("photo_url")
+    private String photoUrl;
 }
 
