@@ -14,5 +14,6 @@ public class CoachCreateRequest {
     private String bio;
     private String certifications;
     private String photoUrl;
+    private Boolean active;
 }
 
