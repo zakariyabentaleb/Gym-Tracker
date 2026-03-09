@@ -16,5 +16,7 @@ public interface WaitlistRepository extends CrudRepository<Waitlist, Long> {
 
     @Query("SELECT COALESCE(MAX(position),0) FROM waitlists WHERE schedule_id = :scheduleId")
     Integer findMaxPositionForSchedule(@Param("scheduleId") Long scheduleId);
-}
 
+    @Query("SELECT * FROM waitlists WHERE member_id = :memberId ORDER BY created_at DESC")
+    List<Waitlist> findByMemberId(@Param("memberId") Long memberId);
+}
