@@ -64,6 +64,12 @@ public class SubscriptionController {
         return subscriptionService.create(request);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_RECEPTIONIST')")
+    public List<SubscriptionResponse> listAll() {
+        return subscriptionService.findAll();
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_RECEPTIONIST')")
     public SubscriptionResponse getById(@PathVariable Long id) {
