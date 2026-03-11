@@ -33,6 +33,12 @@ public class PaymentController {
         return paymentService.create(request);
     }
 
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_RECEPTIONIST')")
+    public List<PaymentResponse> listAll() {
+        return paymentService.findAll();
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_RECEPTIONIST')")
     public PaymentResponse getById(@PathVariable Long id) {
