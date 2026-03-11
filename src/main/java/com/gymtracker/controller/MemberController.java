@@ -58,6 +58,23 @@ public class MemberController {
     }
 
     /**
+     * For ROLE_MEMBER: update own profile (cannot change active status).
+     */
+    @PatchMapping("/me")
+    @PreAuthorize("hasAuthority('ROLE_MEMBER')")
+    public MemberResponse updateMe(@Valid @RequestBody MemberUpdateRequest request,
+                                   Authentication authentication) {
+        String username = authentication.getName();
+        long userId = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username))
+                .getId();
+        MemberResponse current = memberService.getByUserId(userId);
+        // Members cannot change their own active status
+        request.setActive(null);
+        return memberService.update(current.getId(), request);
+    }
+
+    /**
      * For ROLE_MEMBER: return the Member record linked to the currently authenticated user.
      */
     @GetMapping("/me")
