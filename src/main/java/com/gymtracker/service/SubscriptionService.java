@@ -87,6 +87,15 @@ public class SubscriptionService {
         return out;
     }
 
+    public List<com.gymtracker.dto.SubscriptionResponse> findAll() {
+        List<Subscription> subs = subscriptionRepository.findAllOrderByIdDesc();
+        List<com.gymtracker.dto.SubscriptionResponse> out = new ArrayList<>();
+        for (Subscription s : subs) {
+            out.add(SubscriptionMapper.toDto(s));
+        }
+        return out;
+    }
+
     public com.gymtracker.dto.SubscriptionResponse update(Long id, SubscriptionUpdateRequest req) {
         Optional<Subscription> opt = subscriptionRepository.findById(id);
         if (opt.isEmpty()) throw new IllegalArgumentException("Subscription not found: " + id);
