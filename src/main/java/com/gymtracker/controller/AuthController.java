@@ -2,6 +2,7 @@ package com.gymtracker.controller;
 
 import com.gymtracker.dto.AuthRequest;
 import com.gymtracker.dto.AuthResponse;
+import com.gymtracker.dto.ChangePasswordRequest;
 import com.gymtracker.dto.RegisterRequest;
 import com.gymtracker.entity.AppUser;
 import com.gymtracker.enums.Role;
@@ -85,5 +86,23 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse("", null));
         }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                            Authentication authentication) {
+        String username = authentication.getName();
+        AppUser user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(java.util.Map.of("message", "Mot de passe actuel incorrect"));
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return ResponseEntity.ok(java.util.Map.of("message", "Mot de passe modifié avec succès"));
     }
 }
