@@ -16,5 +16,8 @@ public interface PaymentRepository extends CrudRepository<Payment, Long> {
 
     @Query("SELECT * FROM payments WHERE subscription_id = :subscriptionId")
     List<Payment> findBySubscriptionId(@Param("subscriptionId") Long subscriptionId);
+
+    @Query("SELECT * FROM payments ORDER BY payment_date DESC")
+    List<Payment> findAllOrderByPaymentDateDesc();
 }
 
