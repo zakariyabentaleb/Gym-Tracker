@@ -20,4 +20,7 @@ public interface BookingRepository extends CrudRepository<Booking, Long> {
 
     @Query("SELECT * FROM bookings WHERE schedule_id = :scheduleId AND member_id = :memberId LIMIT 1")
     Optional<Booking> findByScheduleIdAndMemberId(@Param("scheduleId") Long scheduleId, @Param("memberId") Long memberId);
+
+    @Query("SELECT COUNT(*) FROM bookings WHERE schedule_id = :scheduleId AND status = 'CONFIRMED'")
+    int countConfirmedByScheduleId(@Param("scheduleId") Long scheduleId);
 }
