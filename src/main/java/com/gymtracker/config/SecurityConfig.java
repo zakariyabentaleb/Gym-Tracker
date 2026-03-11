@@ -33,11 +33,14 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/change-password").authenticated()
                         .requestMatchers("/api/auth/**", "/h2-console/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/courses", "/api/courses/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/course-schedules", "/api/course-schedules/**").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/coaches/active", "/api/coaches/{id}").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/bookings/schedule/*/confirmed-count").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/plans", "/api/plans/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 // H2 console needs these
