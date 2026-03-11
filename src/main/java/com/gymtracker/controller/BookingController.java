@@ -15,8 +15,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+
+import com.gymtracker.repository.BookingRepository;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -26,6 +30,7 @@ public class BookingController {
     private final BookingService bookingService;
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
+    private final BookingRepository bookingRepository;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -104,6 +109,12 @@ public class BookingController {
             }
         }
         return bookingService.cancel(id);
+    }
+
+    @GetMapping("/schedule/{scheduleId}/confirmed-count")
+    public Map<String, Integer> getConfirmedCount(@PathVariable Long scheduleId) {
+        int count = bookingRepository.countConfirmedByScheduleId(scheduleId);
+        return Map.of("count", count);
     }
 }
 
