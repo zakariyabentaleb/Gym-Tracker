@@ -85,4 +85,11 @@ public class PaymentService {
         for (com.gymtracker.entity.Payment p : list) out.add(PaymentMapper.toDto(p));
         return out;
     }
+
+    public List<com.gymtracker.dto.PaymentResponse> findAll() {
+        List<com.gymtracker.entity.Payment> list = paymentRepository.findAllOrderByPaymentDateDesc();
+        List<com.gymtracker.dto.PaymentResponse> out = new ArrayList<>();
+        for (com.gymtracker.entity.Payment p : list) out.add(PaymentMapper.toDto(p));
+        return out;
+    }
 }
