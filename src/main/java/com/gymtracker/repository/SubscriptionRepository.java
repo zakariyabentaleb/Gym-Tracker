@@ -13,4 +13,7 @@ public interface SubscriptionRepository extends CrudRepository<Subscription, Lon
 
     @Query("SELECT * FROM subscriptions WHERE member_id = :memberId")
     List<Subscription> findByMemberId(@Param("memberId") Long memberId);
+
+    @Query("SELECT * FROM subscriptions ORDER BY id DESC")
+    List<Subscription> findAllOrderByIdDesc();
 }
