@@ -6,6 +6,7 @@ import com.gymtracker.repository.CourseRepository;
 import com.gymtracker.repository.CourseScheduleRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -37,26 +38,27 @@ public class CourseScheduleService {
             throw new IllegalArgumentException("capacity must be positive");
         }
         CourseSchedule s = CourseScheduleMapper.fromCreateRequest(req);
+        applyExpiredInactiveRule(s);
         CourseSchedule saved = scheduleRepository.save(s);
         return CourseScheduleMapper.toDto(saved);
     }
 
     public List<com.gymtracker.dto.CourseScheduleResponse> findAll() {
         List<com.gymtracker.dto.CourseScheduleResponse> out = new ArrayList<>();
-        scheduleRepository.findAll().forEach(s -> out.add(CourseScheduleMapper.toDto(s)));
+        scheduleRepository.findAll().forEach(s -> out.add(CourseScheduleMapper.toDto(ensureExpiredInactive(s))));
         return out;
     }
 
     public com.gymtracker.dto.CourseScheduleResponse findById(Long id) {
         Optional<CourseSchedule> opt = scheduleRepository.findById(id);
         if (opt.isEmpty()) return null;
-        return CourseScheduleMapper.toDto(opt.get());
+        return CourseScheduleMapper.toDto(ensureExpiredInactive(opt.get()));
     }
 
     public List<com.gymtracker.dto.CourseScheduleResponse> findByCourseId(Long courseId) {
         List<CourseSchedule> list = scheduleRepository.findByCourseId(courseId);
         List<com.gymtracker.dto.CourseScheduleResponse> out = new ArrayList<>();
-        for (CourseSchedule s : list) out.add(CourseScheduleMapper.toDto(s));
+        for (CourseSchedule s : list) out.add(CourseScheduleMapper.toDto(ensureExpiredInactive(s)));
         return out;
     }
 
@@ -78,8 +80,25 @@ public class CourseScheduleService {
         }
         if (req.getCapacity() != null) s.setCapacity(req.getCapacity());
         if (req.getActive() != null) s.setActive(req.getActive());
+        applyExpiredInactiveRule(s);
         CourseSchedule saved = scheduleRepository.save(s);
         return CourseScheduleMapper.toDto(saved);
+    }
+
+    private CourseSchedule ensureExpiredInactive(CourseSchedule schedule) {
+        if (schedule == null) return null;
+        if (applyExpiredInactiveRule(schedule)) {
+            return scheduleRepository.save(schedule);
+        }
+        return schedule;
+    }
+
+    private boolean applyExpiredInactiveRule(CourseSchedule schedule) {
+        if (schedule == null || schedule.getEndTime() == null) return false;
+        if (!schedule.getEndTime().isBefore(LocalDateTime.now())) return false;
+        if (Boolean.FALSE.equals(schedule.getActive())) return false;
+        schedule.setActive(false);
+        return true;
     }
 
     public void delete(Long id) {
