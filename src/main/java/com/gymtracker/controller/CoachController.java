@@ -72,6 +72,14 @@ public class CoachController {
         return coachService.getSchedulesForUser(username);
     }
 
+    @PostMapping("/me/schedules/{scheduleId}/confirm")
+    @PreAuthorize("hasAuthority('ROLE_COACH')")
+    public com.gymtracker.dto.CourseScheduleResponse confirmMySchedule(@PathVariable Long scheduleId,
+                                                                       Authentication authentication) {
+        String username = authentication.getName();
+        return coachService.confirmScheduleForUser(username, scheduleId);
+    }
+
     @GetMapping("/{id}/schedules")
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_RECEPTIONIST')")
     public List<com.gymtracker.dto.CourseScheduleResponse> getSchedulesForCoach(@PathVariable Long id) {
