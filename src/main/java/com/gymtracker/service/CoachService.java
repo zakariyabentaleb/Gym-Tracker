@@ -8,6 +8,7 @@ import com.gymtracker.mapper.CourseScheduleMapper;
 import com.gymtracker.repository.CoachRepository;
 import com.gymtracker.repository.CourseScheduleRepository;
 import com.gymtracker.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,5 +114,28 @@ public class CoachService {
             out.add(CourseScheduleMapper.toDto(s));
         }
         return out;
+    }
+
+    @Transactional
+    public com.gymtracker.dto.CourseScheduleResponse confirmScheduleForUser(String username, Long scheduleId) {
+        var userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) throw new IllegalArgumentException("User not found: " + username);
+
+        Long userId = userOpt.get().getId();
+        Optional<Coach> coachOpt = coachRepository.findByUserId(userId);
+        if (coachOpt.isEmpty()) throw new IllegalArgumentException("No coach profile found for user: " + username);
+
+        Long coachId = coachOpt.get().getId();
+        Optional<com.gymtracker.entity.CourseSchedule> scheduleOpt = scheduleRepository.findById(scheduleId);
+        if (scheduleOpt.isEmpty()) throw new IllegalArgumentException("Schedule not found: " + scheduleId);
+
+        com.gymtracker.entity.CourseSchedule schedule = scheduleOpt.get();
+        if (schedule.getCoachId() == null || !schedule.getCoachId().equals(coachId)) {
+            throw new AccessDeniedException("You can only confirm your own schedules");
+        }
+
+        schedule.setActive(true);
+        com.gymtracker.entity.CourseSchedule saved = scheduleRepository.save(schedule);
+        return CourseScheduleMapper.toDto(saved);
     }
 }
