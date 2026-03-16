@@ -99,7 +99,7 @@ public class CoachService {
         List<com.gymtracker.entity.CourseSchedule> list = scheduleRepository.findByCoachId(coachId);
         List<com.gymtracker.dto.CourseScheduleResponse> out = new ArrayList<>();
         for (com.gymtracker.entity.CourseSchedule s : list) {
-            out.add(CourseScheduleMapper.toDto(s));
+            out.add(CourseScheduleMapper.toDto(ensureExpiredInactive(s)));
         }
         return out;
     }
@@ -111,7 +111,7 @@ public class CoachService {
         List<com.gymtracker.entity.CourseSchedule> list = scheduleRepository.findByCoachId(coachId);
         List<com.gymtracker.dto.CourseScheduleResponse> out = new ArrayList<>();
         for (com.gymtracker.entity.CourseSchedule s : list) {
-            out.add(CourseScheduleMapper.toDto(s));
+            out.add(CourseScheduleMapper.toDto(ensureExpiredInactive(s)));
         }
         return out;
     }
@@ -133,9 +133,22 @@ public class CoachService {
         if (schedule.getCoachId() == null || !schedule.getCoachId().equals(coachId)) {
             throw new AccessDeniedException("You can only confirm your own schedules");
         }
+        if (schedule.getEndTime() != null && schedule.getEndTime().isBefore(LocalDateTime.now())) {
+            schedule.setActive(false);
+            scheduleRepository.save(schedule);
+            throw new IllegalArgumentException("Expired schedules cannot be confirmed");
+        }
 
         schedule.setActive(true);
         com.gymtracker.entity.CourseSchedule saved = scheduleRepository.save(schedule);
         return CourseScheduleMapper.toDto(saved);
+    }
+
+    private com.gymtracker.entity.CourseSchedule ensureExpiredInactive(com.gymtracker.entity.CourseSchedule schedule) {
+        if (schedule == null || schedule.getEndTime() == null) return schedule;
+        if (!schedule.getEndTime().isBefore(LocalDateTime.now())) return schedule;
+        if (Boolean.FALSE.equals(schedule.getActive())) return schedule;
+        schedule.setActive(false);
+        return scheduleRepository.save(schedule);
     }
 }
