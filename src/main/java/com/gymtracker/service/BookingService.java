@@ -28,17 +28,20 @@ public class BookingService {
     private final CourseRepository courseRepository;
     private final MemberRepository memberRepository;
     private final WaitlistRepository waitlistRepository;
+    private final WaitlistService waitlistService;
 
     public BookingService(BookingRepository bookingRepository,
                           CourseScheduleRepository scheduleRepository,
                           CourseRepository courseRepository,
                           MemberRepository memberRepository,
-                          WaitlistRepository waitlistRepository) {
+                          WaitlistRepository waitlistRepository,
+                          WaitlistService waitlistService) {
         this.bookingRepository = bookingRepository;
         this.scheduleRepository = scheduleRepository;
         this.courseRepository = courseRepository;
         this.memberRepository = memberRepository;
         this.waitlistRepository = waitlistRepository;
+        this.waitlistService = waitlistService;
     }
 
     @Transactional
@@ -102,23 +105,15 @@ public class BookingService {
                 throw new IllegalArgumentException("Failed to save booking: " + root, ex);
             }
         } else {
-            // add to waitlist
-            Integer maxPos = waitlistRepository.findMaxPositionForSchedule(s.getId());
-            int pos = (maxPos != null ? maxPos : 0) + 1;
-            Waitlist w = Waitlist.builder()
-                    .scheduleId(s.getId())
-                    .memberId(req.getMemberId())
-                    .position(pos)
-                    .createdAt(LocalDateTime.now())
-                    .build();
-            Waitlist saved = waitlistRepository.save(w);
+            // add to waitlist using WaitlistService (handles duplicates + exceptions)
+            com.gymtracker.dto.WaitlistResponse waitlistResp = waitlistService.addToWaitlist(s.getId(), req.getMemberId());
             // return a BookingResponse-like object indicating waiting
             com.gymtracker.dto.BookingResponse resp = new com.gymtracker.dto.BookingResponse();
             resp.setId(null);
             resp.setScheduleId(s.getId());
             resp.setMemberId(req.getMemberId());
             resp.setStatus(BookingStatus.WAITING);
-            resp.setCreatedAt(saved.getCreatedAt());
+            resp.setCreatedAt(waitlistResp.getCreatedAt());
             resp.setUpdatedAt(null);
             return resp;
         }
