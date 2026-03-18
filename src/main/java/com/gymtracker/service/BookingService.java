@@ -159,18 +159,24 @@ public class BookingService {
         List<Waitlist> wl = waitlistRepository.findByScheduleId(scheduleId);
         if (wl == null || wl.isEmpty()) return;
         Waitlist first = wl.get(0);
-        // create booking for this member
-        Booking nb = Booking.builder()
-                .scheduleId(scheduleId)
-                .memberId(first.getMemberId())
-                .status(BookingStatus.CONFIRMED)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
-        try {
+        // Avoid triggering a duplicate-key SQL error: PostgreSQL marks the transaction as failed after that.
+        Optional<Booking> existing = bookingRepository.findByScheduleIdAndMemberId(scheduleId, first.getMemberId());
+        if (existing.isPresent()) {
+            Booking existingBooking = existing.get();
+            if (BookingStatus.CANCELLED.equalsIgnoreCase(existingBooking.getStatus())) {
+                existingBooking.setStatus(BookingStatus.CONFIRMED);
+                existingBooking.setUpdatedAt(LocalDateTime.now());
+                bookingRepository.save(existingBooking);
+            }
+        } else {
+            Booking nb = Booking.builder()
+                    .scheduleId(scheduleId)
+                    .memberId(first.getMemberId())
+                    .status(BookingStatus.CONFIRMED)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .build();
             bookingRepository.save(nb);
-        } catch (DataIntegrityViolationException ex) {
-            // someone else simultaneously created the booking; ignore and continue
         }
         // remove waitlist entry
         waitlistRepository.deleteById(first.getId());
