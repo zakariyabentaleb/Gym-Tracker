@@ -72,8 +72,15 @@ public class WaitlistService {
                 .position(pos)
                 .createdAt(LocalDateTime.now())
                 .build();
-        Waitlist saved = waitlistRepository.save(w);
-        return WaitlistMapper.toDto(saved);
+        
+        try {
+            Waitlist saved = waitlistRepository.save(w);
+            return WaitlistMapper.toDto(saved);
+        } catch (DataIntegrityViolationException e) {
+            // This happens when the member is already on the waitlist (UNIQUE constraint violation)
+            // This can happen due to race conditions even with the check above
+            throw new IllegalStateException("Vous êtes déjà en attente pour cette séance");
+        }
     }
 
     public List<WaitlistResponse> listBySchedule(Long scheduleId) {
