@@ -58,8 +58,13 @@ public class BookingService {
 
         // check if member already booked
         Optional<Booking> existing = bookingRepository.findByScheduleIdAndMemberId(s.getId(), req.getMemberId());
-        if (existing.isPresent() && !BookingStatus.CANCELLED.equalsIgnoreCase(existing.get().getStatus())) {
-            throw new IllegalStateException("Member already has a booking for this schedule");
+        Booking cancelledBooking = null;
+        if (existing.isPresent()) {
+            Booking existingBooking = existing.get();
+            if (!BookingStatus.CANCELLED.equalsIgnoreCase(existingBooking.getStatus())) {
+                throw new IllegalStateException("Member already has a booking for this schedule");
+            }
+            cancelledBooking = existingBooking;
         }
 
         // determine capacity
@@ -70,6 +75,13 @@ public class BookingService {
         long confirmed = bookings.stream().filter(b -> BookingStatus.CONFIRMED.equalsIgnoreCase(b.getStatus())).count();
 
         if (confirmed < capacity) {
+            if (cancelledBooking != null) {
+                cancelledBooking.setStatus(BookingStatus.CONFIRMED);
+                cancelledBooking.setUpdatedAt(LocalDateTime.now());
+                Booking reactivated = bookingRepository.save(cancelledBooking);
+                return BookingMapper.toDto(reactivated);
+            }
+
             Booking b = Booking.builder()
                     .scheduleId(s.getId())
                     .memberId(req.getMemberId())
