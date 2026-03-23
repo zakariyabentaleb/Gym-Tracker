@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS courses (
   description VARCHAR(2000),
   duration_minutes INT,
   capacity INT,
+  photo_url VARCHAR(1024),
   active BOOLEAN DEFAULT TRUE
 );
 
