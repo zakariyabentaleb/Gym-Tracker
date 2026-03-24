@@ -5,9 +5,9 @@ import com.gymtracker.mapper.CourseMapper;
 import com.gymtracker.repository.CourseRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CourseService {
@@ -31,10 +31,10 @@ public class CourseService {
     }
 
     public List<com.gymtracker.dto.CourseResponse> findAll() {
-        Iterable<Course> it = courseRepository.findAll();
-        List<com.gymtracker.dto.CourseResponse> out = new ArrayList<>();
-        for (Course c : it) out.add(CourseMapper.toDto(c));
-        return out;
+        List<Course> courses = courseRepository.findAll();
+        return courses.stream()
+                .map(CourseMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     public com.gymtracker.dto.CourseResponse update(Long id, com.gymtracker.dto.CourseCreateRequest req) {
@@ -55,4 +55,3 @@ public class CourseService {
         courseRepository.deleteById(id);
     }
 }
-
