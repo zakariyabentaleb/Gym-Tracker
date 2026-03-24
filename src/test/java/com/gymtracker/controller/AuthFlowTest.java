@@ -51,16 +51,20 @@ class AuthFlowTest {
     }
 
     @Test
-    void admin_can_login() throws Exception {
-        // create admin directly in DB
-        AppUser admin = AppUser.builder()
-                .username("admin1")
-                .password(passwordEncoder.encode("AdminPass123!"))
-                .roles(Role.ROLE_ADMIN.name())
-                .build();
-        userRepository.save(admin);
+    void admin_can_register_and_login() throws Exception {
+        // Register first user via bootstrap (no auth required, becomes admin)
+        RegisterRequest firstUser = new RegisterRequest();
+        firstUser.setUsername("admin1");
+        firstUser.setPassword("AdminPass123!");
+        firstUser.setRole(Role.ROLE_ADMIN);
 
-        // login as admin to get token
+        String firstUserBody = objectMapper.writeValueAsString(firstUser);
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(firstUserBody))
+                .andExpect(status().isCreated());
+
+        // Now login with those credentials
         AuthRequest login = new AuthRequest();
         login.setUsername("admin1");
         login.setPassword("AdminPass123!");
