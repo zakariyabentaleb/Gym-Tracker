@@ -12,7 +12,9 @@ RUN mvn clean package -DskipTests
 # Stage 2: Create runtime image
 FROM eclipse-temurin:17-jre
 
+
 WORKDIR /app
+
 
 # Copy the JAR from builder stage
 COPY --from=builder /app/target/Gym-Tracker-*.jar app.jar
