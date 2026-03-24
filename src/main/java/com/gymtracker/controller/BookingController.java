@@ -7,6 +7,7 @@ import com.gymtracker.entity.Member;
 import com.gymtracker.repository.MemberRepository;
 import com.gymtracker.repository.UserRepository;
 import com.gymtracker.service.BookingService;
+import com.gymtracker.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ public class BookingController {
     private final UserRepository userRepository;
     private final MemberRepository memberRepository;
     private final BookingRepository bookingRepository;
+    private final SubscriptionService subscriptionService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -50,7 +52,11 @@ public class BookingController {
         Long userId = userOpt.get().getId();
         Optional<Member> memberOpt = memberRepository.findByUserId(userId);
         if (memberOpt.isEmpty()) throw new IllegalArgumentException("Member not found for user: " + userId);
-        req.setMemberId(memberOpt.get().getId());
+        Long memberId = memberOpt.get().getId();
+        if (!subscriptionService.hasActiveSubscription(memberId)) {
+            throw new IllegalStateException("Un abonnement actif est requis pour s'inscrire a une seance.");
+        }
+        req.setMemberId(memberId);
         return bookingService.create(req);
     }
 
