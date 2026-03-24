@@ -4,9 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.LocalDateTime;
 
@@ -14,39 +17,40 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("coaches")
+@Entity
+@Table(name = "coaches")
 public class Coach {
 
     @Id
-    @Column("id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
     /** link to users.id (optional) */
-    @Column("user_id")
+    @Column(name = "user_id")
     private Long userId;
 
-    @Column("display_name")
+    @Column(name = "display_name")
     private String displayName;
 
-    @Column("phone")
+    @Column(name = "phone")
     private String phone;
 
-    @Column("bio")
+    @Column(name = "bio")
     private String bio;
 
-    @Column("certifications")
+    @Column(name = "certifications")
     private String certifications;
 
-    @Column("photo_url")
+    @Column(name = "photo_url")
     private String photoUrl;
 
-    @Column("active")
+    @Column(name = "active")
     private Boolean active;
 
-    @Column("created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column("updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-
