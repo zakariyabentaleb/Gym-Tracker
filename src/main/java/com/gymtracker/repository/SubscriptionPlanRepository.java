@@ -1,8 +1,7 @@
 package com.gymtracker.repository;
 
 import com.gymtracker.entity.SubscriptionPlan;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface SubscriptionPlanRepository extends CrudRepository<SubscriptionPlan, Long> {
+public interface SubscriptionPlanRepository extends JpaRepository<SubscriptionPlan, Long> {
 }
-
