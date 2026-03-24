@@ -4,37 +4,41 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("courses")
+@Entity
+@Table(name = "courses")
 public class Course {
 
     @Id
-    @Column("id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column("name")
+    @Column(name = "name")
     private String name;
 
-    @Column("description")
+    @Column(name = "description")
     private String description;
 
-    @Column("duration_minutes")
+    @Column(name = "duration_minutes")
     private Integer durationMinutes;
 
-    @Column("capacity")
+    @Column(name = "capacity")
     private Integer capacity;
 
-    @Column("active")
+    @Column(name = "active")
     private Boolean active;
 
-    @Column("photo_url")
+    @Column(name = "photo_url")
     private String photoUrl;
 }
-
