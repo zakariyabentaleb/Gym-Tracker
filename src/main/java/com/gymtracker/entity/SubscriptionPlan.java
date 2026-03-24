@@ -4,37 +4,42 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("subscription_plans")
+@Entity
+@Table(name = "subscription_plans")
 public class SubscriptionPlan {
 
     @Id
-    @Column("id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column("name")
+    @Column(name = "name")
     private String name;
 
-    @Column("duration_days")
-    private Integer durationDays;
-
-    @Column("price_cents")
-    private Integer priceCents;
-
-    @Column("includes_classes")
-    private Boolean includesClasses;
-
-    @Column("description")
+    @Column(name = "description")
     private String description;
 
-    @Column("active")
-    private Boolean active;
-}
+    // price in cents (integer)
+    @Column(name = "price_cents")
+    private Integer priceCents;
 
+    @Column(name = "includes_classes")
+    private Boolean includesClasses;
+
+    @Column(name = "active")
+    private Boolean active;
+
+    @Column(name = "duration_days")
+    private Integer durationDays;
+}
