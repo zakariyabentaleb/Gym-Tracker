@@ -48,7 +48,7 @@ jobs:
         run: ./mvnw -Dspring.profiles.active=ci -B package
 
       - name: Run tests
-        run: ./mvnw -Dspring.profiles.active=ci -B test
+        run: ./mvnw -Dspring.profiles.active=test -B test
 
       - name: Build Docker image (local, not pushed)
         uses: docker/build-push-action@v4
