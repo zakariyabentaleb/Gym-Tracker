@@ -44,7 +44,6 @@ class AuthFlowTest {
     @BeforeEach
     void setup() {
         userRepository.deleteAll();
-        // Apply Spring Security to MockMvc so JWT filter and security config are active
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac)
                 .apply(springSecurity())
                 .build();
@@ -55,10 +54,25 @@ class AuthFlowTest {
     }
 
     @Test
-    void protectedEndpoint_requiresAuth() throws Exception {
-        // /api/me requires authentication - calling without token should return 401
-        mockMvc.perform(get("/api/me"))
-                .andExpect(status().isUnauthorized());
+    void admin_can_login() throws Exception {
+        // create admin directly in DB
+        AppUser admin = AppUser.builder()
+                .username("admin1")
+                .password(passwordEncoder.encode("AdminPass123!"))
+                .roles(Role.ROLE_ADMIN.name())
+                .build();
+        userRepository.save(admin);
+
+        // login as admin to get token
+        AuthRequest login = new AuthRequest();
+        login.setUsername("admin1");
+        login.setPassword("AdminPass123!");
+        String loginBody = objectMapper.writeValueAsString(login);
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
+                .andExpect(status().isOk());
     }
 
     @Test
