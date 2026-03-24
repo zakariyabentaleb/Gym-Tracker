@@ -132,6 +132,23 @@ public class SubscriptionService {
         return SubscriptionMapper.toDto(saved);
     }
 
+    public boolean hasActiveSubscription(Long memberId) {
+        if (memberId == null) {
+            return false;
+        }
+
+        LocalDate today = LocalDate.now();
+        List<Subscription> subs = subscriptionRepository.findByMemberId(memberId);
+
+        return subs.stream().anyMatch(s ->
+                "ACTIVE".equalsIgnoreCase(s.getStatus()) &&
+                s.getStartDate() != null &&
+                s.getEndDate() != null &&
+                !today.isBefore(s.getStartDate()) &&
+                !today.isAfter(s.getEndDate())
+        );
+    }
+
     private boolean datesOverlap(LocalDate aStart, LocalDate aEnd, LocalDate bStart, LocalDate bEnd) {
         return (aStart.isBefore(bEnd) || aStart.isEqual(bEnd)) && (bStart.isBefore(aEnd) || bStart.isEqual(aEnd));
     }
