@@ -207,13 +207,6 @@ String value = String.format(Locale.US, "%.2f", amountCents / 100.0);
      - schedule existe et capacity non dépassée
      - transactions/locking pour capacité (éviter race conditions)
 
-Conseils pour le développement et debugging
-==========================================
-- Ajoute des logs détaillés (niveau DEBUG) dans les services critiques (BookingService, PaymentService, PayPalService).
-- Quand tu testes PayPal, active le logging de la requête envoyée (payload) pour repérer les formats erronés.
-- Utilise Postman pour rejouer les scénarios : créer membre (Admin), créer plan, créer subscription, créer paiement, réserver cours.
-- Si tu changes les CHECK constraints en SQL, pense à versionner le script `db/schema-postgres.sql` et à sauvegarder les migrations.
-
 Tests
 =====
 - Tests unitaires : `mvnw.cmd test`
@@ -230,25 +223,5 @@ COPY target/Gym-Tracker-0.0.1-SNAPSHOT.jar app.jar
 ENTRYPOINT ["java","-jar","/app.jar"]
 ```
 
-Bonnes pratiques & prochaine étapes recommandées
-===============================================
-- Stabilisation : corriger les erreurs DB/Jackson/PayPal en priorité.
-- Implémenter le waitlist (FIFO) et notifications (email/SMS) après booking stable.
-- Intégration frontend : AngularJS doit utiliser un HttpInterceptor pour ajouter le JWT sur chaque requête; gérer refresh token si implémenté.
-- Ajouter OpenAPI (springdoc) pour documenter automatiquement les endpoints.
 
-Ressources dans le repo
-=======================
-- `postman/` : collections pour tests API
-- `db/schema-postgres.sql` : script de création des tables et contraintes
-- `jira_full_backlog.csv` : backlog détaillé (Epics→Stories→Tasks) prêt à importer
-
-Contact / Aide
-==============
-Si tu veux que je :
-- Génère un `README.md` plus ciblé pour le frontend (exemples d'appels et schéma des réponses), je le fais.
-- Crée la collection Postman complète avec variables et exemples test — je peux l'exporter.
-
----
-Fichier généré automatiquement par l'assistant. Si tu veux des sections supplémentaires (diagrammes, OpenAPI export, ou instructions Docker Compose + PostgreSQL), dis lesquelles et je les ajoute.
 
