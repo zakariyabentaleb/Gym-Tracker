@@ -4,9 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,35 +18,36 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("subscriptions")
+@Entity
+@Table(name = "subscriptions")
 public class Subscription {
 
     @Id
-    @Column("id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column("member_id")
+    @Column(name = "member_id")
     private Long memberId;
 
-    @Column("plan_id")
+    @Column(name = "plan_id")
     private Long planId;
 
-    @Column("start_date")
+    @Column(name = "start_date")
     private LocalDate startDate;
 
-    @Column("end_date")
+    @Column(name = "end_date")
     private LocalDate endDate;
 
-    @Column("status")
+    @Column(name = "status")
     private String status; // could be an enum, store as string
 
-    @Column("auto_renew")
+    @Column(name = "auto_renew")
     private Boolean autoRenew;
 
-    @Column("created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column("updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-
