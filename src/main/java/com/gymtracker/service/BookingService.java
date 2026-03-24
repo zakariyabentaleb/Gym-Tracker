@@ -187,6 +187,8 @@ public class BookingService {
             w.setPosition(pos++);
             waitlistRepository.save(w);
         }
+
+
     }
 }
 
