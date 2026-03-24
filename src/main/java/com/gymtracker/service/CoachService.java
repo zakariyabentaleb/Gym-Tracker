@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CoachService {
@@ -50,10 +51,10 @@ public class CoachService {
     }
 
     public List<CoachResponse> listActive() {
-        List<Coach> list = coachRepository.findActive();
-        List<CoachResponse> out = new ArrayList<>();
-        for (Coach c : list) out.add(CoachMapper.toDto(c));
-        return out;
+        List<Coach> list = coachRepository.findByActiveTrue();
+        return list.stream()
+                .map(CoachMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Transactional
