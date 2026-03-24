@@ -4,9 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -17,26 +20,28 @@ import java.util.stream.Collectors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table("users")
+@Entity
+@Table(name = "users")
 public class AppUser {
 
     @Id
-    @Column("id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
-    @Column("username")
+    @Column(name = "username")
     private String username;
 
     /**
      * BCrypt hash.
      */
-    @Column("password")
+    @Column(name = "password")
     private String password;
 
     /**
      * Comma-separated roles, e.g. "ROLE_ADMIN,ROLE_MEMBER".
      */
-    @Column("roles")
+    @Column(name = "roles")
     private String roles;
 
     public List<String> rolesAsList() {
