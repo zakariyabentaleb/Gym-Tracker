@@ -35,14 +35,10 @@ class AuthFlowTest {
     @Autowired
     UserRepository userRepository;
 
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
     @BeforeEach
     void setup() {
         userRepository.deleteAll();
         this.mockMvc = MockMvcBuilders.webAppContextSetup(wac).build();
-
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -50,7 +46,6 @@ class AuthFlowTest {
 
     @Test
     void register_first_user_returns_created() throws Exception {
-        // Register first user (bootstrap case - no auth required)
         RegisterRequest firstUser = new RegisterRequest();
         firstUser.setUsername("testadmin");
         firstUser.setPassword("TestPassword123!");
@@ -65,7 +60,6 @@ class AuthFlowTest {
 
     @Test
     void login_with_valid_credentials_returns_ok() throws Exception {
-        // First register a user
         RegisterRequest user = new RegisterRequest();
         user.setUsername("logintest");
         user.setPassword("LoginPass123!");
@@ -77,7 +71,6 @@ class AuthFlowTest {
                         .content(registerBody))
                 .andExpect(status().isCreated());
 
-        // Then login
         AuthRequest login = new AuthRequest();
         login.setUsername("logintest");
         login.setPassword("LoginPass123!");
