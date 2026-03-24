@@ -41,6 +41,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Ensure mvnw is executable
+        run: chmod +x ./mvnw
+
       - name: Build with Maven (package)
         run: ./mvnw -Dspring.profiles.active=ci -B package
 
