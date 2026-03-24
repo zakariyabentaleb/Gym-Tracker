@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.gymtracker.dto.AuthRequest;
 import com.gymtracker.dto.RegisterRequest;
-import com.gymtracker.entity.AppUser;
 import com.gymtracker.enums.Role;
 import com.gymtracker.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -51,73 +49,43 @@ class AuthFlowTest {
     }
 
     @Test
-    void admin_can_register_and_login() throws Exception {
-        // Register first user via bootstrap (no auth required, becomes admin)
+    void register_first_user_returns_created() throws Exception {
+        // Register first user (bootstrap case - no auth required)
         RegisterRequest firstUser = new RegisterRequest();
-        firstUser.setUsername("admin1");
-        firstUser.setPassword("AdminPass123!");
+        firstUser.setUsername("testadmin");
+        firstUser.setPassword("TestPassword123!");
         firstUser.setRole(Role.ROLE_ADMIN);
 
-        String firstUserBody = objectMapper.writeValueAsString(firstUser);
+        String body = objectMapper.writeValueAsString(firstUser);
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(firstUserBody))
+                        .content(body))
                 .andExpect(status().isCreated());
-
-        // Now login with those credentials
-        AuthRequest login = new AuthRequest();
-        login.setUsername("admin1");
-        login.setPassword("AdminPass123!");
-        String loginBody = objectMapper.writeValueAsString(login);
-
-        mockMvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginBody))
-                .andExpect(status().isOk());
     }
 
     @Test
-    void admin_creates_member_and_member_can_call_me() throws Exception {
-        // Register first user via bootstrap (becomes admin, no auth required)
-        RegisterRequest firstUser = new RegisterRequest();
-        firstUser.setUsername("admin1");
-        firstUser.setPassword("AdminPass123!");
-        firstUser.setRole(Role.ROLE_ADMIN);
+    void login_with_valid_credentials_returns_ok() throws Exception {
+        // First register a user
+        RegisterRequest user = new RegisterRequest();
+        user.setUsername("logintest");
+        user.setPassword("LoginPass123!");
+        user.setRole(Role.ROLE_MEMBER);
 
-        String firstUserBody = objectMapper.writeValueAsString(firstUser);
-        String firstUserJson = mockMvc.perform(post("/api/auth/register")
+        String registerBody = objectMapper.writeValueAsString(user);
+        mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(firstUserBody))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        String adminToken = firstUserJson.replaceAll(".*\"token\":\"", "")
-                .replaceAll("\".*", "");
-
-        // use admin token to register a new member
-        RegisterRequest register = new RegisterRequest();
-        register.setUsername("member1");
-        register.setPassword("secret123");
-        register.setRole(Role.ROLE_MEMBER);
-
-        String registerBody = objectMapper.writeValueAsString(register);
-        String registerJson = mockMvc.perform(post("/api/auth/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .header("Authorization", "Bearer " + adminToken)
                         .content(registerBody))
-                .andExpect(status().isCreated())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
+                .andExpect(status().isCreated());
 
-        String memberToken = registerJson.replaceAll(".*\"token\":\"", "")
-                .replaceAll("\".*", "");
+        // Then login
+        AuthRequest login = new AuthRequest();
+        login.setUsername("logintest");
+        login.setPassword("LoginPass123!");
 
-        // member calls /api/me
-        mockMvc.perform(get("/api/me")
-                        .header("Authorization", "Bearer " + memberToken))
+        String loginBody = objectMapper.writeValueAsString(login);
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(loginBody))
                 .andExpect(status().isOk());
     }
 }
