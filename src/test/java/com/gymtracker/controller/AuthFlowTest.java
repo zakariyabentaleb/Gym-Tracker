@@ -74,30 +74,23 @@ class AuthFlowTest {
 
     @Test
     void admin_creates_member_and_member_can_call_me() throws Exception {
-        // create admin directly in DB
-        AppUser admin = AppUser.builder()
-                .username("admin1")
-                .password(passwordEncoder.encode("AdminPass123!"))
-                .roles(Role.ROLE_ADMIN.name())
-                .build();
-        userRepository.save(admin);
+        // Register first user via bootstrap (becomes admin, no auth required)
+        RegisterRequest firstUser = new RegisterRequest();
+        firstUser.setUsername("admin1");
+        firstUser.setPassword("AdminPass123!");
+        firstUser.setRole(Role.ROLE_ADMIN);
 
-        // login as admin to get token
-        AuthRequest login = new AuthRequest();
-        login.setUsername("admin1");
-        login.setPassword("AdminPass123!");
-        String loginBody = objectMapper.writeValueAsString(login);
-
-        String loginJson = mockMvc.perform(post("/api/auth/login")
+        String firstUserBody = objectMapper.writeValueAsString(firstUser);
+        String firstUserJson = mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(loginBody))
-                .andExpect(status().isOk())
+                        .content(firstUserBody))
+                .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
 
-        String adminToken = loginJson.replaceAll(".*\\\"token\\\":\\\"", "")
-                .replaceAll("\\\".*", "");
+        String adminToken = firstUserJson.replaceAll(".*\"token\":\"", "")
+                .replaceAll("\".*", "");
 
         // use admin token to register a new member
         RegisterRequest register = new RegisterRequest();
@@ -115,8 +108,8 @@ class AuthFlowTest {
                 .getResponse()
                 .getContentAsString();
 
-        String memberToken = registerJson.replaceAll(".*\\\"token\\\":\\\"", "")
-                .replaceAll("\\\".*", "");
+        String memberToken = registerJson.replaceAll(".*\"token\":\"", "")
+                .replaceAll("\".*", "");
 
         // member calls /api/me
         mockMvc.perform(get("/api/me")
