@@ -152,4 +152,5 @@ public class SubscriptionService {
     private boolean datesOverlap(LocalDate aStart, LocalDate aEnd, LocalDate bStart, LocalDate bEnd) {
         return (aStart.isBefore(bEnd) || aStart.isEqual(bEnd)) && (bStart.isBefore(aEnd) || bStart.isEqual(aEnd));
     }
+
 }
